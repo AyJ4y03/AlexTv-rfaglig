@@ -4,75 +4,88 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class MakeOrder {
-        private String name;
-        private ArrayList<Pizza> pizzas;
+        // Attributes:
+        public String name; // Navnet på kunden
+        public int totalPrice; // Den endelige pris når en ordre er færdiggjort
+        public ArrayList<ValuesOfPizza> pizzas; // Liste over ordren
 
-        public MakeOrder(String name) {
-                this.name = name;
-                this.pizzas = new ArrayList<>();
+        // Setters for ordre liste og total pris
+        public MakeOrder() {
+                this.pizzas = new ArrayList<>(); // Setter en arrayliste til pizzas
+                this.totalPrice = 0; // setter total pris til 0
         }
 
-        public void addPizza(int orderNumber, int value) {
-                Pizza newPizza = new Pizza(orderNumber, value);
-                pizzas.add(newPizza);
+        // Metode til at tilføje en pizza til ordren
+        public void addPizzaToOrder(ValuesOfPizza pizza) {
+                Scanner scanner = new Scanner(System.in);
+
+                // Spørg om man vil tilføje krav til pizza:
+                System.out.println("Vil du tilføje krav til " + pizza.navn + "? (Ja(1) / Nej(2):): ");
+                System.out.print("(1/2): ");
+                int krav = scanner.nextInt();
+                scanner.nextLine();
+
+                if (krav == 1) {
+                        System.out.print("Tilføj krav: ");
+                        String extraKrav = scanner.nextLine();
+                        pizza.ingredienser += ", Ekstra: " + extraKrav;
+                }
+
+                pizzas.add(pizza);
+                totalPrice += pizza.pris;
+                System.out.println("Tilføjet til ordre: " + pizza.pizzaToString());
         }
 
-        public String toString() {
-                String orderDetails = "Navn: " + name + "\nPizzaer:\n";
-                for (Pizza pizza : pizzas) {
-                        orderDetails += "Ordre nummer: " + pizza.getOrderNumber()
-                                + ", Antal: " + pizza.getValue() + " stk.\n";
+        // Metode til at vise den fulde ordre og indtaste kundens navn
+        public void showOrder() {
+                Scanner scanner = new Scanner(System.in);
+
+                System.out.println("\n--- Ordre Liste ---");
+                for (ValuesOfPizza pizza : pizzas) {
+                        System.out.println(pizza.pizzaToString());
                 }
-                return orderDetails;
+                System.out.println("Total Pris: " + totalPrice + " kr");
+
+                // Indtast kundens navn
+                System.out.print("Kundens navn: ");
+                this.name = scanner.nextLine();
+                System.out.println("Ordre færdiggjort for: " + name);
+
+                SeeOrder.allOrders.add(this);
         }
 
-        public static class Pizza {
-                private int orderNumber;
-                private int value;
+        // Metode til at lave en ordre fra menuen
+        public static void createOrderFromMenu() {
+                Scanner scanner = new Scanner(System.in);
+                MakeOrder order = new MakeOrder();
 
-                public Pizza(int orderNumber, int value) {
-                        this.orderNumber = orderNumber;
-                        this.value = value;
+                System.out.println("Tilgængelige Pizzaer: ");
+                for (int i = 0; i < ValuesOfPizza.menyPizza.size(); i++) {
+                        System.out.println((i + 1) + ". " + ValuesOfPizza.menyPizza.get(i).pizzaToString());
                 }
 
-                public int getOrderNumber() {
-                        return orderNumber;
-                }
+                int choice;
+                do {
+                        System.out.println("Skriv (0) for at afslutte ordre!");
+                        System.out.print("Skriv nummer på pizza: ");
 
-                public int getValue() {
-                        return value;
-                }
-        }
-
-        public static void IndtastOrdre() {
-                Scanner input = new Scanner(System.in);
-
-                System.out.print("Indtast navn: ");
-                String name = input.nextLine();
-
-                MakeOrder newOrder = new MakeOrder(name);
-
-                boolean addingPizza = true;
-                while (addingPizza) {
-                        System.out.print("Indtast pizza nr.: ");
-                        int orderNumber = input.nextInt();
-
-                        System.out.print("Indtast antal pizzaer: ");
-                        int value = input.nextInt();
-
-                        newOrder.addPizza(orderNumber, value);
-
-                        System.out.println("Vil du fortsætte ordre? (Ja(1) Nej(2) Tilføj krav(3)):): ");
-                        System.out.print("(1/2/3): ");
-                        int choice = input.nextInt();
-                        input.nextLine();
-
-                        if (choice == 2) {
-                                addingPizza = false;
+                        // Tjek om input er et tal
+                        while (!scanner.hasNextInt()) {
+                                System.out.println("Ugyldigt input. Indtast et pizzanummer eller 0 for at afslutte.");
+                                scanner.next();
                         }
-                }
 
-                System.out.println("\nKvittering:");
-                System.out.println(newOrder);
+                        choice = scanner.nextInt();
+
+                        if (choice != 0) {
+                                int pizzaChoice = choice - 1; // Justere for  et nul-baseret indeks
+                                if (pizzaChoice >= 0 && pizzaChoice < ValuesOfPizza.menyPizza.size()) {
+                                        order.addPizzaToOrder(ValuesOfPizza.menyPizza.get(pizzaChoice));
+                                } else {
+                                        System.out.println("Ugyldigt valg. Vælg et gyldigt pizzanummer.");
+                                }
+                        }
+                } while (choice != 0);
+                order.showOrder();
         }
 }
